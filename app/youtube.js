@@ -1,5 +1,5 @@
 window.YT_API = {
-  SETTINGS_KEY: 'cls_yt_settings_v4',
+  SETTINGS_KEY: 'cls_yt_settings_v5', 
   
   getSettings() {
     const defaultSettings = {
@@ -42,11 +42,10 @@ window.YT_API = {
     return { channelId: item.id, uploadsPlaylistId: item.contentDetails.relatedPlaylists.uploads };
   },
   
-  // ⬇️ 페이지를 자동으로 넘기며 계속 가져오도록 업그레이드된 핵심 부분입니다!
   async fetchPlaylistItems(playlistId, apiKey, max) {
     let allItems = [];
     let nextPageToken = '';
-    const limit = max || 200; // 최대 200개까지 자동으로 가져옵니다.
+    const limit = max || 500; // 최대 500개까지 싹 다 가져옵니다!
     
     while (allItems.length < limit) {
       const fetchSize = Math.min(50, limit - allItems.length);
@@ -59,7 +58,7 @@ window.YT_API = {
       allItems = allItems.concat((data.items || []).map(this.mapItem));
       nextPageToken = data.nextPageToken;
       
-      if (!nextPageToken) break; // 더 이상 가져올 영상이 없으면 알아서 멈춥니다.
+      if (!nextPageToken) break; 
     }
     return allItems;
   },
@@ -73,11 +72,15 @@ window.YT_API = {
   
   async loadAll({ handle, apiKey }) {
     const { channelId, uploadsPlaylistId } = await this.resolveChannel(handle, apiKey);
-    const all = await this.fetchPlaylistItems(uploadsPlaylistId, apiKey, 50); 
+    
+    // ⬇️ 여기가 핵심입니다! 홈 화면의 전체 영상과 상단 칩들이 참조할 데이터를 500개로 대폭 늘렸습니다.
+    const all = await this.fetchPlaylistItems(uploadsPlaylistId, apiKey, 500); 
     const playlists = await this.fetchPlaylists(channelId, apiKey, 50); 
+    
     const rows = [];
     for (const pl of playlists) {
-      const items = await this.fetchPlaylistItems(pl.id, apiKey, 50); 
+      // ⬇️ 홈 화면에 보이는 개별 재생목록들도 500개까지 모두 긁어옵니다.
+      const items = await this.fetchPlaylistItems(pl.id, apiKey, 500); 
       if (items.length) rows.push({ key: pl.id, title: pl.snippet.title, items });
     }
     return { channelId, hero: all[0], all, rows };
