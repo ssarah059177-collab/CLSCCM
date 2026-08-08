@@ -1,0 +1,90 @@
+<!-- @dsCard group="App" viewport="390x760" subtitle="CLS Bible TV mobile app prototype — home, parable/figure lists, player" -->
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/tokens/fonts.css">
+<link rel="stylesheet" href="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/tokens/colors.css">
+<link rel="stylesheet" href="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/tokens/typography.css">
+<link rel="stylesheet" href="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/tokens/spacing.css">
+<link rel="stylesheet" href="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/tokens/base.css">
+<link rel="stylesheet" href="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/_ds_bundle.js"></script>
+<style>
+body{margin:0;background:var(--warm-100);display:flex;justify-content:center;padding:24px 0;font-family:var(--font-sans)}
+.screen-enter{animation:screenIn .32s ease-out}
+@keyframes screenIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head><body>
+<div id="root"></div>
+<script src="data.js"></script>
+<script src="youtube.js"></script>
+<script type="text/babel" src="screens/HomeScreen.jsx"></script>
+<script type="text/babel" src="screens/ListScreen.jsx"></script>
+<script type="text/babel" src="screens/FavoritesScreen.jsx"></script>
+<script type="text/babel" src="screens/PlayerScreen.jsx"></script>
+<script type="text/babel" src="screens/SettingsScreen.jsx"></script>
+<script type="text/babel" src="screens/VisionScreen.jsx"></script>
+<script type="text/babel">
+function App(){
+  const ds = window.CLSBibleTVDesignSystem_2f7378;
+  const { BottomNav } = ds;
+  const [screen, setScreen] = React.useState('home');
+  const [video, setVideo] = React.useState(null);
+  const nav = (s, v) => { setScreen(s); if (v !== undefined) setVideo(v); else if (s === 'browse') setVideo(null); };
+  React.useEffect(() => { setTimeout(() => window.lucide && window.lucide.createIcons(), 50); }, [screen]);
+  const tab = (screen === 'player' || screen === 'settings') ? 'home' : screen;
+
+  const [ytStatus, setYtStatus] = React.useState('idle');
+  const [ytData, setYtData] = React.useState(null);
+  const [ytError, setYtError] = React.useState('');
+  const [ytSettings, setYtSettings] = React.useState(() => window.YT_API.getSettings());
+  const connect = React.useCallback(async (settings) => {
+    window.YT_API.saveSettings(settings);
+    setYtSettings(settings);
+    if (!settings.apiKey) { setYtStatus('idle'); return; }
+    setYtStatus('loading'); setYtError('');
+    try {
+      const data = await window.YT_API.loadAll(settings);
+      setYtData(data); setYtStatus('ready');
+    } catch (e) {
+      setYtStatus('error'); setYtError(e.message || '연동에 실패했어요');
+    }
+  }, []);
+  const disconnect = React.useCallback(() => {
+    window.YT_API.saveSettings({});
+    setYtSettings({}); setYtStatus('idle'); setYtData(null); setYtError('');
+  }, []);
+  React.useEffect(() => { if (ytSettings.apiKey) connect(ytSettings); }, []);
+  const yt = { status: ytStatus, data: ytData, error: ytError, settings: ytSettings, connect, disconnect };
+  return (
+    <div style={{ width: 390, height: 760, background: '#fff', borderRadius: 32, overflow: 'hidden', boxShadow: 'var(--shadow-lg)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <div key={screen} className="screen-enter" style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        {screen === 'home' && <window.HomeScreen nav={nav} ds={ds} yt={yt} />}
+        {screen === 'browse' && <window.ListScreen nav={nav} ds={ds} kind="all" yt={yt} target={video} />}
+        {screen === 'favorites' && <window.FavoritesScreen nav={nav} ds={ds} />}
+        {screen === 'vision' && <window.VisionScreen nav={nav} ds={ds} />}
+        {screen === 'player' && <window.PlayerScreen nav={nav} ds={ds} video={video} />}
+        {screen === 'settings' && <window.SettingsScreen nav={nav} ds={ds} yt={yt} />}
+      </div>
+      {screen !== 'player' && screen !== 'settings' && (
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
+          <BottomNav
+            active={tab}
+            onChange={nav}
+            items={[
+              { key: 'home', label: '홈', icon: <i data-lucide="home" style={{ width: 22, height: 22 }}></i> },
+              { key: 'browse', label: '모아보기', icon: <i data-lucide="layout-grid" style={{ width: 22, height: 22 }}></i> },
+              { key: 'favorites', label: '즐겨찾기', icon: <i data-lucide="heart" style={{ width: 22, height: 22 }}></i> },
+              { key: 'vision', label: '채널 비전', icon: <i data-lucide="compass" style={{ width: 22, height: 22 }}></i> },
+            ]}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body></html>

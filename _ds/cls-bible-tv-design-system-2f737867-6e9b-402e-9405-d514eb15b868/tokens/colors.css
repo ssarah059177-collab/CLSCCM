@@ -1,0 +1,70 @@
+:root{
+/* Primary — Navy Blue (main brand color) */
+--navy-50:oklch(96% 0.008 258);
+--navy-100:oklch(91% 0.018 258);
+--navy-200:oklch(83% 0.032 258);
+--navy-300:oklch(72% 0.05 258);
+--navy-400:oklch(60% 0.065 258);
+--navy-500:oklch(48% 0.075 258);
+--navy-600:oklch(38% 0.075 258);
+--navy-700:oklch(30% 0.065 258);
+--navy-800:oklch(22% 0.05 258);
+--navy-900:oklch(15% 0.035 258);
+
+/* Secondary — Warm Olive Green (accent) */
+--olive-50:oklch(96% 0.02 115);
+--olive-100:oklch(91% 0.035 115);
+--olive-200:oklch(82% 0.055 115);
+--olive-300:oklch(71% 0.07 115);
+--olive-400:oklch(60% 0.08 114);
+--olive-500:oklch(50% 0.08 113);
+--olive-600:oklch(41% 0.07 112);
+--olive-700:oklch(33% 0.06 111);
+--olive-800:oklch(25% 0.045 110);
+--olive-900:oklch(17% 0.03 110);
+
+/* Neutral — warm, soft gray for backgrounds and text */
+--warm-0:oklch(99.3% 0.002 90);
+--warm-50:oklch(97.8% 0.004 80);
+--warm-100:oklch(95.5% 0.006 75);
+--warm-200:oklch(91% 0.008 70);
+--warm-300:oklch(83% 0.009 65);
+--warm-400:oklch(70% 0.01 60);
+--warm-500:oklch(56% 0.01 55);
+--warm-600:oklch(45% 0.009 55);
+--warm-700:oklch(35% 0.008 55);
+--warm-800:oklch(25% 0.006 55);
+--warm-900:oklch(17% 0.004 55);
+
+/* Semantic status colors — muted, non-clinical */
+--success-500:oklch(52% 0.09 142);
+--success-100:oklch(93% 0.035 142);
+--warning-500:oklch(64% 0.12 65);
+--warning-100:oklch(94% 0.04 75);
+--error-500:oklch(50% 0.13 25);
+--error-100:oklch(93% 0.04 22);
+--info-500:var(--navy-500);
+--info-100:var(--navy-50);
+
+/* Semantic aliases */
+--color-bg:var(--warm-0);
+--color-bg-subtle:var(--warm-50);
+--color-surface:#ffffff;
+--color-surface-sunken:var(--warm-50);
+--color-border:var(--warm-200);
+--color-border-strong:var(--warm-300);
+--color-text-primary:var(--navy-900);
+--color-text-secondary:var(--warm-600);
+--color-text-muted:var(--warm-500);
+--color-text-on-primary:var(--warm-0);
+--color-text-on-accent:var(--warm-0);
+--color-brand-primary:var(--navy-600);
+--color-brand-primary-hover:var(--navy-700);
+--color-brand-primary-active:var(--navy-800);
+--color-brand-accent:var(--olive-500);
+--color-brand-accent-hover:var(--olive-600);
+--color-brand-accent-active:var(--olive-700);
+--color-link:var(--navy-600);
+--color-link-hover:var(--navy-700);
+--color-focus-ring:var(--navy-400);
+}
