@@ -1,5 +1,5 @@
 window.YT_API = {
-  SETTINGS_KEY: 'cls_yt_settings_v5', 
+  SETTINGS_KEY: 'cls_yt_settings_v6', 
   
   getSettings() {
     const defaultSettings = {
@@ -45,7 +45,7 @@ window.YT_API = {
   async fetchPlaylistItems(playlistId, apiKey, max) {
     let allItems = [];
     let nextPageToken = '';
-    const limit = max || 500; // 최대 500개까지 싹 다 가져옵니다!
+    const limit = max || 500; 
     
     while (allItems.length < limit) {
       const fetchSize = Math.min(50, limit - allItems.length);
@@ -73,17 +73,38 @@ window.YT_API = {
   async loadAll({ handle, apiKey }) {
     const { channelId, uploadsPlaylistId } = await this.resolveChannel(handle, apiKey);
     
-    // ⬇️ 여기가 핵심입니다! 홈 화면의 전체 영상과 상단 칩들이 참조할 데이터를 500개로 대폭 늘렸습니다.
-    const all = await this.fetchPlaylistItems(uploadsPlaylistId, apiKey, 500); 
+    const rawAll = await this.fetchPlaylistItems(uploadsPlaylistId, apiKey, 500); 
     const playlists = await this.fetchPlaylists(channelId, apiKey, 50); 
     
+    // 💡 핵심 1: 쇼츠를 판별하는 규칙 (제목이나 설명에 #shorts 또는 #쇼츠 가 포함된 것)
+    const isShort = (it) => {
+      const text = ((it.title || '') + ' ' + (it.description || '')).toLowerCase();
+      return text.includes('#shorts') || text.includes('#쇼츠');
+    };
+
+    // 💡 핵심 2: 쇼츠와 일반 영상을 완벽하게 쪼개기
+    const all = rawAll.filter(it => !isShort(it)); // '전체' 메뉴에서는 쇼츠를 숨김
+    const shorts = rawAll.filter(it => isShort(it)); // 쇼츠만 따로 가방에 담음
+    
     const rows = [];
-    for (const pl of playlists) {
-      // ⬇️ 홈 화면에 보이는 개별 재생목록들도 500개까지 모두 긁어옵니다.
-      const items = await this.fetchPlaylistItems(pl.id, apiKey, 500); 
-      if (items.length) rows.push({ key: pl.id, title: pl.snippet.title, items });
+    
+    // 💡 핵심 3: '쇼츠 모아보기' 전용 카테고리(메뉴)를 맨 앞에 생성
+    if (shorts.length > 0) {
+      rows.push({ key: 'shorts_only', title: '📱 쇼츠 모아보기', items: shorts });
     }
-    return { channelId, hero: all[0], all, rows };
+
+    for (const pl of playlists) {
+      const items = await this.fetchPlaylistItems(pl.id, apiKey, 500); 
+      // 다른 재생목록 안에서도 쇼츠가 섞여있다면 숨겨줍니다.
+      const filteredItems = items.filter(it => !isShort(it));
+      
+      if (filteredItems.length) {
+        rows.push({ key: pl.id, title: pl.snippet.title, items: filteredItems });
+      }
+    }
+    
+    // 앱을 켰을 때 맨 위에 뜨는 가장 큰 메인 영상도 무조건 '일반 영상'으로 고정
+    return { channelId, hero: all[0] || rawAll[0], all, rows };
   },
   
   async searchChannel(channelId, query, apiKey, max) {
