@@ -1,12 +1,12 @@
 
 window.YT_API = {
-  SETTINGS_KEY: 'cls_yt_settings',
+  // 기존의 잘못된 접속 기억을 완전히 지우기 위해 키 이름을 v2로 변경했습니다.
+  SETTINGS_KEY: 'cls_yt_settings_v2',
   
-  // ⬇️ 여기가 수정된 부분입니다! (기본값 설정)
   getSettings() {
     const defaultSettings = {
-      handle: '@clsbibletv',
-      apiKey: 'PAIzaSyCb2bF5rDuUICgyl2yvI_HO6slIuJwyycs' // ⬅️ 이 부분을 교수님의 진짜 키로 바꿔주세요!
+      handle: 'UCFH45g8rhOBwUR4g_FEm_ag', 
+      apiKey: 'AIzaSyCb2bF5rDuUICgyl2yvI_HO6slIuJwyycs' 
     };
     try {
       const saved = JSON.parse(localStorage.getItem(this.SETTINGS_KEY) || '{}');
@@ -35,8 +35,9 @@ window.YT_API = {
   },
   
   async resolveChannel(handle, apiKey) {
-    const h = handle.replace(/^@?/, '@');
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id,contentDetails&forHandle=${encodeURIComponent(h)}&key=${apiKey}`);
+    // 핸들(@) 대신 정확한 채널 ID를 기반으로 검색하도록 내부 구조를 변환했습니다.
+    const h = handle.replace(/^@?/, '');
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id,contentDetails&id=${h}&key=${apiKey}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || 'YouTube API 오류');
     if (!data.items || !data.items.length) throw new Error('채널을 찾을 수 없어요');
