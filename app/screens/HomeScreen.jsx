@@ -16,7 +16,6 @@ window.HomeScreen = function HomeScreen({ nav, ds, yt }) {
     '영어CCM': 'PLQ5a8UD4kKX0',
   };
   
-  // 💡 핵심 1: 화면에 '쇼츠 모아보기' 칩(버튼)을 추가했습니다.
   const chips = ['전체', '📱 쇼츠 모아보기', '파라블CCM', '성경인물CCM', '애니메이션CCM', 'Global CCM', '영어CCM'];
   const [chip, setChip] = React.useState('전체');
   const [chipItems, setChipItems] = React.useState(null);
@@ -29,10 +28,8 @@ window.HomeScreen = function HomeScreen({ nav, ds, yt }) {
     if (!live) return;
     setChipError('');
     
-    // 💡 핵심 2: '전체'를 누르면 쇼츠가 빠진 일반 영상만 보여줍니다.
     if (c === '전체') { setChipItems(yt.data.all); setChipLoading(false); return; }
     
-    // 💡 핵심 3: '쇼츠 모아보기'를 누르면 미리 솎아둔 쇼츠 방(shorts_only)을 보여줍니다.
     if (c === '📱 쇼츠 모아보기') { 
       const shortsRow = yt.data.rows.find(r => r.key === 'shorts_only');
       setChipItems(shortsRow ? shortsRow.items : []); 
@@ -46,9 +43,8 @@ window.HomeScreen = function HomeScreen({ nav, ds, yt }) {
     
     setChipItems(null); setChipLoading(true);
     try {
-      const items = await window.YT_API.fetchPlaylistItems(playlistId, yt.settings.apiKey, 500); // 넉넉하게 가져오기 유지
+      const items = await window.YT_API.fetchPlaylistItems(playlistId, yt.settings.apiKey, 500); 
       
-      // 개별 재생목록(파라블, 성경인물 등)에서도 쇼츠를 다시 한번 걸러냅니다.
       const isShort = (it) => {
         const text = ((it.title || '') + ' ' + (it.description || '')).toLowerCase();
         return text.includes('#shorts') || text.includes('#쇼츠');
@@ -82,7 +78,8 @@ window.HomeScreen = function HomeScreen({ nav, ds, yt }) {
       <div style={{ padding: '20px 20px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 600, color: 'var(--color-brand-primary)' }}>CLS Bible TV</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <a href={`https://www.youtube.com/${(yt.settings.handle || '@clsbibletv').replace(/^@?/, '@')}?sub_confirmation=1`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-brand-primary)', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-medium)', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+          {/* 💡 핵심 수정 부분: 원숭이가 나오지 않도록 채널 ID 기반의 정확한 주소로 고쳤습니다! */}
+          <a href={`https://www.youtube.com/channel/${yt.settings.handle || 'UCFH45g8rhOBwUR4g_FEm_ag'}?sub_confirmation=1`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-brand-primary)', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-medium)', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
             <i data-lucide="play-circle" style={{ width: 15, height: 15 }}></i>
             채널 바로가기
           </a>
