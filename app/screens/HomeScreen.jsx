@@ -15,7 +15,9 @@ window.HomeScreen = function HomeScreen({ nav, ds, yt }) {
     'Global CCM': 'PLGxulYRr8lJ2bIs8SZE5SA9L_cSu619gB',
     '영어CCM': 'PLQ5a8UD4kKX0',
   };
-  const chips = ['전체', '파라블CCM', '성경인물CCM', '애니메이션CCM', 'Global CCM', '영어CCM'];
+  
+  // 💡 핵심 1: 화면에 '쇼츠 모아보기' 칩(버튼)을 추가했습니다.
+  const chips = ['전체', '📱 쇼츠 모아보기', '파라블CCM', '성경인물CCM', '애니메이션CCM', 'Global CCM', '영어CCM'];
   const [chip, setChip] = React.useState('전체');
   const [chipItems, setChipItems] = React.useState(null);
   const [chipLoading, setChipLoading] = React.useState(false);
@@ -26,15 +28,35 @@ window.HomeScreen = function HomeScreen({ nav, ds, yt }) {
     setChip(c);
     if (!live) return;
     setChipError('');
+    
+    // 💡 핵심 2: '전체'를 누르면 쇼츠가 빠진 일반 영상만 보여줍니다.
     if (c === '전체') { setChipItems(yt.data.all); setChipLoading(false); return; }
+    
+    // 💡 핵심 3: '쇼츠 모아보기'를 누르면 미리 솎아둔 쇼츠 방(shorts_only)을 보여줍니다.
+    if (c === '📱 쇼츠 모아보기') { 
+      const shortsRow = yt.data.rows.find(r => r.key === 'shorts_only');
+      setChipItems(shortsRow ? shortsRow.items : []); 
+      setChipLoading(false); 
+      return; 
+    }
+    
     const playlistId = PLAYLIST_MAP[c];
     if (!playlistId) { setChipItems([]); setChipLoading(false); return; }
     if (cacheRef.current[c]) { setChipItems(cacheRef.current[c]); setChipLoading(false); return; }
+    
     setChipItems(null); setChipLoading(true);
     try {
-      const items = await window.YT_API.fetchPlaylistItems(playlistId, yt.settings.apiKey, 12);
-      cacheRef.current[c] = items;
-      setChipItems(items);
+      const items = await window.YT_API.fetchPlaylistItems(playlistId, yt.settings.apiKey, 500); // 넉넉하게 가져오기 유지
+      
+      // 개별 재생목록(파라블, 성경인물 등)에서도 쇼츠를 다시 한번 걸러냅니다.
+      const isShort = (it) => {
+        const text = ((it.title || '') + ' ' + (it.description || '')).toLowerCase();
+        return text.includes('#shorts') || text.includes('#쇼츠');
+      };
+      const cleanItems = items.filter(it => !isShort(it));
+      
+      cacheRef.current[c] = cleanItems;
+      setChipItems(cleanItems);
     } catch (e) {
       setChipError(e.message || '재생목록을 불러오지 못했어요');
     } finally {
@@ -114,7 +136,7 @@ window.HomeScreen = function HomeScreen({ nav, ds, yt }) {
           <div key={row.key} style={{ marginBottom: 28 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
               <div style={{ fontSize: 19, fontWeight: 600, color: 'var(--color-text-primary)' }}>{row.title}</div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-muted)', cursor: 'pointer' }} onClick={() => nav('browse', { chip, playlistId: chip === '전체' ? null : PLAYLIST_MAP[chip], title: row.title })}>더보기</div>
+              <div style={{ fontSize: 13, color: 'var(--color-text-muted)', cursor: 'pointer' }} onClick={() => nav('browse', { chip, playlistId: chip === '전체' ? null : (chip === '📱 쇼츠 모아보기' ? 'shorts' : PLAYLIST_MAP[chip]), title: row.title })}>더보기</div>
             </div>
             <div style={{ display: 'flex', gap: 14, overflowX: 'auto', paddingBottom: 4 }}>
               {row.items.map((it) => (
