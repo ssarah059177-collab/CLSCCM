@@ -1,7 +1,5 @@
-
 window.YT_API = {
-  // 기존의 잘못된 접속 기억을 완전히 지우기 위해 키 이름을 v2로 변경했습니다.
-  SETTINGS_KEY: 'cls_yt_settings_v2',
+  SETTINGS_KEY: 'cls_yt_settings_v3',
   
   getSettings() {
     const defaultSettings = {
@@ -35,7 +33,6 @@ window.YT_API = {
   },
   
   async resolveChannel(handle, apiKey) {
-    // 핸들(@) 대신 정확한 채널 ID를 기반으로 검색하도록 내부 구조를 변환했습니다.
     const h = handle.replace(/^@?/, '');
     const res = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=id,contentDetails&id=${h}&key=${apiKey}`);
     const data = await res.json();
@@ -46,14 +43,14 @@ window.YT_API = {
   },
   
   async fetchPlaylistItems(playlistId, apiKey, max) {
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=${max || 12}&key=${apiKey}`);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/playlistItems?part=snippet,contentDetails&playlistId=${playlistId}&maxResults=${max || 50}&key=${apiKey}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || 'YouTube API 오류');
     return (data.items || []).map(this.mapItem);
   },
   
   async fetchPlaylists(channelId, apiKey, max) {
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=${channelId}&maxResults=${max || 6}&key=${apiKey}`);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet&channelId=${channelId}&maxResults=${max || 50}&key=${apiKey}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || 'YouTube API 오류');
     return data.items || [];
@@ -61,18 +58,24 @@ window.YT_API = {
   
   async loadAll({ handle, apiKey }) {
     const { channelId, uploadsPlaylistId } = await this.resolveChannel(handle, apiKey);
-    const all = await this.fetchPlaylistItems(uploadsPlaylistId, apiKey, 12);
-    const playlists = await this.fetchPlaylists(channelId, apiKey, 4);
+    
+    // 1. 전체 최신 영상 최대 50개 가져오기
+    const all = await this.fetchPlaylistItems(uploadsPlaylistId, apiKey, 50); 
+    
+    // 2. 재생목록(카테고리) 최대 50개 가져오기
+    const playlists = await this.fetchPlaylists(channelId, apiKey, 50); 
+    
     const rows = [];
     for (const pl of playlists) {
-      const items = await this.fetchPlaylistItems(pl.id, apiKey, 6);
+      // 3. 각 재생목록 안의 영상 최대 50개 가져오기
+      const items = await this.fetchPlaylistItems(pl.id, apiKey, 50); 
       if (items.length) rows.push({ key: pl.id, title: pl.snippet.title, items });
     }
     return { channelId, hero: all[0], all, rows };
   },
   
   async searchChannel(channelId, query, apiKey, max) {
-    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&q=${encodeURIComponent(query)}&type=video&order=date&maxResults=${max || 8}&key=${apiKey}`);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&q=${encodeURIComponent(query)}&type=video&order=date&maxResults=${max || 50}&key=${apiKey}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error.message || 'YouTube API 오류');
     return (data.items || []).map(this.mapItem);
