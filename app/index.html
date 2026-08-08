@@ -1,5 +1,11 @@
 <!-- @dsCard group="App" viewport="390x760" subtitle="CLS Bible TV mobile app prototype — home, parable/figure lists, player" -->
 <!DOCTYPE html><html><head><meta charset="utf-8">
+<title>CLS Bible TV</title>
+<meta property="og:title" content="CLS Bible TV">
+<meta property="og:description" content="은혜로운 영상과 찬양을 함께 나눕니다.">
+<meta property="og:image" content="og-image.png">
+<meta property="og:type" content="website">
+<meta name="description" content="은혜로운 영상과 찬양을 함께 나눕니다.">
 <link rel="stylesheet" href="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/tokens/fonts.css">
 <link rel="stylesheet" href="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/tokens/colors.css">
 <link rel="stylesheet" href="../_ds/cls-bible-tv-design-system-2f737867-6e9b-402e-9405-d514eb15b868/tokens/typography.css">
@@ -54,7 +60,9 @@ function App(){
   }, []);
   const disconnect = React.useCallback(() => {
     window.YT_API.saveSettings({});
-    setYtSettings({}); setYtStatus('idle'); setYtData(null); setYtError('');
+    const defaults = window.YT_API.getSettings();
+    setYtSettings(defaults); setYtStatus('idle'); setYtData(null); setYtError('');
+    if (defaults.apiKey) connect(defaults);
   }, []);
   React.useEffect(() => { if (ytSettings.apiKey) connect(ytSettings); }, []);
   const yt = { status: ytStatus, data: ytData, error: ytError, settings: ytSettings, connect, disconnect };
