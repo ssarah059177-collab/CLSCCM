@@ -78,20 +78,13 @@ window.HomeScreen = function HomeScreen({ nav, ds, yt }) {
       <div style={{ padding: '20px 20px 4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 600, color: 'var(--color-brand-primary)' }}>CLS Bible TV</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* 💡 핵심 수정 부분: 원숭이가 나오지 않도록 채널 ID 기반의 정확한 주소로 고쳤습니다! */}
           <a href={`https://www.youtube.com/channel/${yt.settings.handle || 'UCFH45g8rhOBwUR4g_FEm_ag'}?sub_confirmation=1`} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--color-border)', background: 'var(--color-surface)', color: 'var(--color-brand-primary)', fontSize: 'var(--fs-body-sm)', fontWeight: 'var(--fw-medium)', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
             <i data-lucide="play-circle" style={{ width: 15, height: 15 }}></i>
             채널 바로가기
           </a>
-          <span onClick={() => nav('settings')} style={{ display: 'inline-flex', cursor: 'pointer' }}><i data-lucide="settings" style={{ width: 22, height: 22, color: 'var(--color-text-secondary)' }}></i></span>
+          {/* 💡 시청자들의 실수를 방지하기 위해 톱니바퀴(설정) 버튼을 삭제했습니다. */}
         </div>
       </div>
-      {!live && (
-        <div onClick={() => nav('settings')} style={{ margin: '10px 20px 0', padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--navy-50)', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-          <i data-lucide="tv" style={{ width: 16, height: 16, color: 'var(--color-brand-primary)', flexShrink: 0 }}></i>
-          <span style={{ fontSize: 13, color: 'var(--color-brand-primary)' }}>{yt.status === 'error' ? 'YouTube 연동에 실패했어요. 설정에서 확인해주세요.' : 'YouTube API를 연동하면 실시간 영상으로 채워져요.'}</span>
-        </div>
-      )}
       <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '14px 20px 4px' }}>
         {chips.map((c) => (
           <button key={c} onClick={() => loadChip(c)} style={{
